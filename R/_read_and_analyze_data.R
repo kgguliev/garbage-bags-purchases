@@ -78,21 +78,73 @@ cart_volume <- arranged_grouped %>%
 head(cart_volume, 9)
 
 # 4. Plotting general and variate monthly spending ----
+# Plotting monthly spending by regions 
 
-plot_data <- bind_rows(
-  joined_data %>% 
-  select(hhkey, occaskey, movedate, value, channel),
-  joined_data %>% 
-    select(hhkey, occaskey, movedate, value, channel) %>% 
-    mutate(channel = "TOTAL")
-  ) %>% 
-  ggplot(., aes(x = movedate, y = value)) +
+plot_data <- joined_data %>% 
+  select(hhkey, occaskey, movedate, value, channel, federatio) %>% 
+  arrange(desc(movedate))
+
+ggplot(plot_data, aes(x = movedate, y = value, fill = federatio)) +
   geom_col() +
+  theme_minimal() +
+  coord_flip() +
+  scale_fill_manual(
+    values = c(
+      "Central" = "green",
+      "Far East" = "blue4",
+      "Moscow" = "red",
+      "North-West" = "deepskyblue",
+      "Privolzhie" = "forestgreen",
+      "Siberia" = "navy",
+      "South" = "maroon1",
+      "St.Petersburg" = "yellow",
+      "Ural" = "orange"
+    ),
+    labels = c(
+      "Central",
+      "Far East",
+      "Moscow",
+      "North-West",
+      "Privolzhie",
+      "Siberia",
+      "South",
+      "St.Petersburg",
+      "Ural"
+    )
+  ) +
+  ggtitle(
+    label = "Total spending by federal subjects",
+    subtitle = "Dec 2014 - Nov 2015"
+  ) +
+  ylab("Spending, rub") +
+  xlab("Date")
+
+
+ggplot(plot_data, aes(x = movedate, y = value)) +
+  geom_col(fill = "powderblue") +
   scale_y_log10() +
-  # scale_x_discrete(expand = c(0.1, 0.1)) +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
-  facet_wrap(~ channel, ncol = 2)
+  theme_minimal() +
+  coord_flip() +
+  ggtitle(
+    label = "Total spending by channels",
+    subtitle = "Dec 2014 - Nov 2015"
+  ) +
+  ylab("Spending, rub") +
+  xlab("Date") +
+  facet_wrap(~ channel, ncol = 1)
+
+# 5. variant variable grouping ----
+
+grouping_Variant <- joined_data %>%
+  select(hhkey, occaskey, value, number, variant, federatio) %>%
+  group_by(variant) %>%
+  summarise(MEAN = mean(value, na.rm = TRUE)) %>%
+  ungroup() %>%
+  arrange(desc(MEAN)) %>%
+  mutate(category = ntile(MEAN, 5),
+         category = ifelse(category == 5, "MOST POPULAR", ifelse(category == 4, "POPULAR", 
+                                                                 ifelse(category == 3, "INDIFFIRENT", 
+                                                                        ifelse(category == 2, "LITTLE INTEREST", "NOT POPULAR AT ALL"))))) %>% 
+select(variant, category)
 
 
-ggplot(joined_data, aes(x = movedate, y = value)) +
-  geom_col()
