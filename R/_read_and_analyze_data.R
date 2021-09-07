@@ -148,3 +148,17 @@ grouping_Variant <- joined_data %>%
 select(variant, category)
 
 
+plot_data2 <- grouping_Variant %>% 
+  inner_join(joined_data, by = "variant") %>% 
+  select(hhkey, occaskey, value, variant, category) %>% 
+  mutate(value = log(value))
+
+ggplot(plot_data2, aes(value)) +
+  geom_density(fill = "navy", alpha = 0.4) +
+  facet_wrap(~ category, nrow = 2) +
+  theme_bw() +
+  ggtitle(label = "Value density among variant's categories",
+          subtitle = "Dec 2014 - Nov 2015, Value log10") +
+  xlab("Value, rub") +
+  ylab("")
+
