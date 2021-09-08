@@ -82,7 +82,8 @@ head(cart_volume, 9)
 
 plot_data <- joined_data %>% 
   select(hhkey, occaskey, movedate, value, channel, federatio) %>% 
-  arrange(desc(movedate))
+  arrange(desc(movedate)) %>% 
+  mutate(value = log(value))
 
 ggplot(plot_data, aes(x = movedate, y = value, fill = federatio)) +
   geom_col() +
@@ -114,7 +115,7 @@ ggplot(plot_data, aes(x = movedate, y = value, fill = federatio)) +
   ) +
   ggtitle(
     label = "Total spending by federal subjects",
-    subtitle = "Dec 2014 - Nov 2015"
+    subtitle = "Dec 2014 - Nov 2015, Value logged"
   ) +
   ylab("Spending, rub") +
   xlab("Date")
@@ -158,7 +159,7 @@ ggplot(plot_data2, aes(value)) +
   facet_wrap(~ category, nrow = 2) +
   theme_bw() +
   ggtitle(label = "Value density among variant's categories",
-          subtitle = "Dec 2014 - Nov 2015, Value log10") +
+          subtitle = "Dec 2014 - Nov 2015, Value logged") +
   xlab("Value, rub") +
   ylab("")
 

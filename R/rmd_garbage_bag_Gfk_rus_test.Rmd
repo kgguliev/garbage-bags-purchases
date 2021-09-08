@@ -12,20 +12,21 @@ position: Senior Analyst
 
 Require libraries that I am going to use in data analysis and data manipulation sections
 
-```{r, echo = TRUE, warning = FALSE, eval = FALSE}
+```{r, echo = TRUE, warning = FALSE, message = FALSE, eval = TRUE}
 library(tidyverse) # a basic library for manipulation and analysis
 library(data.table) # just for reading files, best speed benchmarks
 library(lubridate) # to manage time
 library(zoo) # the same puprose
+library(gganimate)
 ```
 
 Then we are going to read our data. I will use `data.table` package and `fread` function to read `.csv` and `.tsv` files. Also, I will join to dataframes and convert the `movedate` variable to a date format.
 
-```{r, echo = TRUE}
+```{r, echo = TRUE, message = FALSE, warning = FALSE, error = FALSE}
 
-dem_data <- fread("./data/demography_data.csv")
+dem_data <- data.table::fread("./data/demography_data.csv")
 
-purchase <- fread("./data/purchase_data.tsv")
+purchase <- data.table::fread("./data/purchase_data.tsv")
 
 joined_data <- purchase %>% 
   inner_join(dem_data, by = "hhkey") %>% 
@@ -108,11 +109,12 @@ head(cart_volume, 9)
 ## 4. Plotting general and variate monthly spending
 Plotting monthly spending by regions - this is my initiative. I thought it will be interesting to see in what regions people spend more on garbage bags monthly
 
-```{r, echo = TRUE, eval = TRUE, warning = FALSE, fig.show = 'animate', fig.align = 'center'}
+```{r, echo = TRUE, eval = TRUE, warning = FALSE}
 
 plot_data <- joined_data %>% 
   select(hhkey, occaskey, movedate, value, channel, federatio) %>% 
-  arrange(desc(movedate))
+  arrange(desc(movedate)) %>% 
+  mutate(value = log(value))
 
 # Plot: total spending
 
@@ -146,7 +148,7 @@ ggplot(plot_data, aes(x = movedate, y = value, fill = federatio)) +
   ) +
   ggtitle(
     label = "Total spending by federal subjects",
-    subtitle = "Dec 2014 - Nov 2015"
+    subtitle = "Dec 2014 - Nov 2015, Value logged"
   ) +
   ylab("Spending, rub") +
   xlab("Date")
@@ -172,7 +174,7 @@ ggplot(plot_data, aes(x = movedate, y = value)) +
 
 Groups were decided according to the mean value (spending). There are five groups of garbage bags variants which represent their popularity (the amount of money that buyer is ready to spend on them)
 
-```{r, echo = TRUE, eval = TRUE, warning = FALSE, fig.show = 'animate', fig.align = 'center'}
+```{r, echo = TRUE, eval = TRUE, warning = FALSE}
 
 grouping_Variant <- joined_data %>%
   select(hhkey, occaskey, value, number, variant, federatio) %>%
@@ -199,7 +201,7 @@ ggplot(plot_data2, aes(value)) +
   facet_wrap(~ category, nrow = 2) +
   theme_bw() +
   ggtitle(label = "Value density among variant's categories",
-          subtitle = "Dec 2014 - Nov 2015, Value log10") +
+          subtitle = "Dec 2014 - Nov 2015, Value logged") +
   xlab("Value, rub") +
   ylab("")
 
